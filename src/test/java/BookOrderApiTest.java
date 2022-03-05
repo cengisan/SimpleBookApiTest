@@ -1,5 +1,3 @@
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -8,11 +6,9 @@ import org.junit.jupiter.api.Assertions;
 import static io.restassured.RestAssured.given;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
-import java.util.List;
 
-public class BookOrderApiTest extends TokenGenerator {
+public class BookOrderApiTest extends TokenAndOrderIdGenerator {
 
-    public static String id;
 
     @BeforeSuite
     public static void setup() {
@@ -67,7 +63,7 @@ public class BookOrderApiTest extends TokenGenerator {
     void order(){
 
         RequestSpecification request = RestAssured.given();
-        request.header("Authorization","Bearer " + TokenGenerator.AuthToken)
+        request.header("Authorization","Bearer " + getAuthToken())
                 .contentType(ContentType.JSON);
 
         String bookOrderingDetail = "{\n" +
@@ -82,7 +78,7 @@ public class BookOrderApiTest extends TokenGenerator {
    @Test(priority = 6)
    void getAllOrders(){
         Response response = given()
-                .header("Authorization","Bearer " + TokenGenerator.AuthToken)
+                .header("Authorization","Bearer " + getAuthToken())
                 .contentType(ContentType.JSON)
                 .accept("*/*")
                 .when()
@@ -96,31 +92,14 @@ public class BookOrderApiTest extends TokenGenerator {
         response.prettyPrint();
    }
 
-    @Test(priority = 7)
-    public void OrderId(){
-
-        Response response = given()
-                .header("Authorization","Bearer " + TokenGenerator.AuthToken)
-                .contentType(ContentType.JSON)
-                .when()
-                .get("/orders")
-                .then()
-                .extract().response();
-
-        Configuration conf = Configuration.defaultConfiguration();
-        List<String> a = JsonPath.using(conf).parse(response.getBody().asString()).read("$..id");
-        id = a.get(0);
-        System.out.println(id);
-
-    }
     @Test(priority = 8)
     void getAnOrder(){
 
         Response response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization","Bearer " + TokenGenerator.AuthToken)
+                .header("Authorization","Bearer " + getAuthToken())
                 .when()
-                .get("/orders/" + id)
+                .get("/orders/" + getId())
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -136,13 +115,13 @@ public class BookOrderApiTest extends TokenGenerator {
 
         RequestSpecification request = RestAssured.given();
 
-                request.header("Authorization","Bearer " + TokenGenerator.AuthToken)
+                request.header("Authorization","Bearer " + getAuthToken())
                 .contentType(ContentType.JSON);
 
         String patchBody = "{\n" +
                 "\"customerName\": \"Zinédine Zidane\"\n}";
 
-        Response patchBodyResponse = request.body(patchBody).patch("/orders/"+id);
+        Response patchBodyResponse = request.body(patchBody).patch("/orders/"+getId());
         Assertions.assertEquals(204, patchBodyResponse.statusCode());
         System.out.println("Patch status: " + patchBodyResponse.getStatusCode() + " but don't worry it is OK.");
         patchBodyResponse.prettyPrint();
@@ -153,9 +132,9 @@ public class BookOrderApiTest extends TokenGenerator {
 
         Response response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization","Bearer " + TokenGenerator.AuthToken)
+                .header("Authorization","Bearer " + getAuthToken())
                 .when()
-                .get("/orders/" + id)
+                .get("/orders/" + getId())
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -170,10 +149,10 @@ public class BookOrderApiTest extends TokenGenerator {
 
         RequestSpecification request = RestAssured.given();
 
-        request.header("Authorization","Bearer " + TokenGenerator.AuthToken)
+        request.header("Authorization","Bearer " + getAuthToken())
                 .contentType(ContentType.JSON);
 
-        Response patchBodyResponse = request.delete("/orders/"+id);
+        Response patchBodyResponse = request.delete("/orders/" + getId());
         Assertions.assertEquals(204, patchBodyResponse.statusCode());
         System.out.println("Delete status: " + patchBodyResponse.getStatusCode() + " but don't worry it deleted.");
         patchBodyResponse.prettyPrint();

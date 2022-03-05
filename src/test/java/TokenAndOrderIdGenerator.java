@@ -1,20 +1,19 @@
+import com.jayway.jsonpath.Configuration;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Assertions;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-public class TokenGenerator {
+import java.util.List;
 
-    @BeforeSuite
-    public static void setup() {
-        RestAssured.baseURI = "https://simple-books-api.glitch.me";
-    }
+import static io.restassured.RestAssured.given;
 
-    public static String AuthToken;
+public class TokenAndOrderIdGenerator {
+
+    private String AuthToken;
 
     @Test(priority = 4)
     public void Token() {
@@ -34,8 +33,34 @@ public class TokenGenerator {
         Assertions.assertEquals(201, responseFromGenerateToken.statusCode());
 
         AuthToken = tokenGenerated;
+    }
+
+    public String getAuthToken(){
+        return AuthToken;
+    }
+
+    private String id;
+
+    @Test(priority = 7)
+    public void OrderId(){
+
+        Response response = given()
+                .header("Authorization","Bearer " + getAuthToken())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/orders")
+                .then()
+                .extract().response();
+
+        Configuration conf = Configuration.defaultConfiguration();
+        List<String> a = com.jayway.jsonpath.JsonPath.using(conf).parse(response.getBody().asString()).read("$..id");
+        id = a.get(0);
+        System.out.println(id);
 
     }
 
+    public String getId(){
+        return id;
+    }
 
 }
