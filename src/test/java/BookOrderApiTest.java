@@ -7,9 +7,9 @@ import static io.restassured.RestAssured.given;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-public class BookOrderApiTest extends TokenAndOrderIdGenerator {
+public class SimpleBookApiTest extends TokenAndOrderIdGenerator {
 
-
+    
     @BeforeSuite
     public static void setup() {
         RestAssured.baseURI = "https://simple-books-api.glitch.me";
@@ -63,7 +63,7 @@ public class BookOrderApiTest extends TokenAndOrderIdGenerator {
     void order(){
 
         RequestSpecification request = RestAssured.given();
-        request.header("Authorization","Bearer " + getAuthToken())
+        request.header("Authorization","Bearer " + value.getAuthToken())
                 .contentType(ContentType.JSON);
 
         String bookOrderingDetail = "{\n" +
@@ -78,7 +78,7 @@ public class BookOrderApiTest extends TokenAndOrderIdGenerator {
    @Test(priority = 6)
    void getAllOrders(){
         Response response = given()
-                .header("Authorization","Bearer " + getAuthToken())
+                .header("Authorization","Bearer " + value.getAuthToken())
                 .contentType(ContentType.JSON)
                 .accept("*/*")
                 .when()
@@ -97,9 +97,9 @@ public class BookOrderApiTest extends TokenAndOrderIdGenerator {
 
         Response response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization","Bearer " + getAuthToken())
+                .header("Authorization","Bearer " + value.getAuthToken())
                 .when()
-                .get("/orders/" + getId())
+                .get("/orders/" + value.getOrderId())
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -115,13 +115,13 @@ public class BookOrderApiTest extends TokenAndOrderIdGenerator {
 
         RequestSpecification request = RestAssured.given();
 
-                request.header("Authorization","Bearer " + getAuthToken())
+                request.header("Authorization","Bearer " + value.getAuthToken())
                 .contentType(ContentType.JSON);
 
         String patchBody = "{\n" +
                 "\"customerName\": \"Zinédine Zidane\"\n}";
 
-        Response patchBodyResponse = request.body(patchBody).patch("/orders/"+getId());
+        Response patchBodyResponse = request.body(patchBody).patch("/orders/"+ value.getOrderId());
         Assertions.assertEquals(204, patchBodyResponse.statusCode());
         System.out.println("Patch status: " + patchBodyResponse.getStatusCode() + " but don't worry it is OK.");
         patchBodyResponse.prettyPrint();
@@ -132,9 +132,9 @@ public class BookOrderApiTest extends TokenAndOrderIdGenerator {
 
         Response response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization","Bearer " + getAuthToken())
+                .header("Authorization","Bearer " + value.getAuthToken())
                 .when()
-                .get("/orders/" + getId())
+                .get("/orders/" + value.getOrderId())
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -149,10 +149,10 @@ public class BookOrderApiTest extends TokenAndOrderIdGenerator {
 
         RequestSpecification request = RestAssured.given();
 
-        request.header("Authorization","Bearer " + getAuthToken())
+        request.header("Authorization","Bearer " + value.getAuthToken())
                 .contentType(ContentType.JSON);
 
-        Response patchBodyResponse = request.delete("/orders/" + getId());
+        Response patchBodyResponse = request.delete("/orders/" + value.getOrderId());
         Assertions.assertEquals(204, patchBodyResponse.statusCode());
         System.out.println("Delete status: " + patchBodyResponse.getStatusCode() + " but don't worry it deleted.");
         patchBodyResponse.prettyPrint();
