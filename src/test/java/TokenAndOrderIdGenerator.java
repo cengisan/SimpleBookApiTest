@@ -6,14 +6,12 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Assertions;
 import org.testng.annotations.Test;
-
 import java.util.List;
-
 import static io.restassured.RestAssured.given;
 
 public class TokenAndOrderIdGenerator {
 
-    private String AuthToken;
+    Values value = new Values();
 
     @Test(priority = 4)
     public void Token() {
@@ -29,23 +27,20 @@ public class TokenAndOrderIdGenerator {
         responseFromGenerateToken.prettyPrint();
 
         String jsonString = responseFromGenerateToken.getBody().asString();
-        String tokenGenerated = JsonPath.from(jsonString).get("accessToken");
+        String AuthToken = JsonPath.from(jsonString).get("accessToken");
+
+        value.setAuthToken(AuthToken);
+
         Assertions.assertEquals(201, responseFromGenerateToken.statusCode());
-
-        AuthToken = tokenGenerated;
     }
 
-    public String getAuthToken(){
-        return AuthToken;
-    }
 
-    private String id;
 
-    @Test(priority = 7)
+    @Test (priority = 7)
     public void OrderId(){
 
         Response response = given()
-                .header("Authorization","Bearer " + getAuthToken())
+                .header("Authorization","Bearer " + value.getAuthToken())
                 .contentType(ContentType.JSON)
                 .when()
                 .get("/orders")
@@ -54,13 +49,11 @@ public class TokenAndOrderIdGenerator {
 
         Configuration conf = Configuration.defaultConfiguration();
         List<String> a = com.jayway.jsonpath.JsonPath.using(conf).parse(response.getBody().asString()).read("$..id");
-        id = a.get(0);
-        System.out.println(id);
+        String orderId = a.get(0);
 
-    }
+        value.setOrderId(orderId);
 
-    public String getId(){
-        return id;
+        System.out.println("OrderId: " + orderId);
     }
 
 }
